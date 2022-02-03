@@ -1,2 +1,11 @@
 # dart-board
-Web App for tracking dart games
+
+## Description
+
+## Database
+
+### Player Profiles
+
+## Dependencies
+
+## Running Locally
