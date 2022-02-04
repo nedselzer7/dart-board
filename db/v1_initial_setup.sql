@@ -13,6 +13,9 @@ create table dartboard.winners_corner
 insert into dartboard.winners_corner(player, win_count, game_type, bb_y_n)
   values ('Test Player', 0, 'Cricket', 'Y');
 
+insert into dartboard.player_profiles(player_name, description, win_count)
+  values ('Test Player', 'This is a test player with no name and no story', 0);
+
 create table dartboard.player_profiles
 (
   player_name varchar(100) not null,
