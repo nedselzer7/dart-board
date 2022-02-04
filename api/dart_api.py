@@ -23,7 +23,7 @@ class Player(Base):
 def get_db_engine():
     user = config('user',default='')
     pw = config('pw',default='')
-    db_server = '@darts-db-instance-1.crbhducizs9g.us-east-1.rds.amazonaws.com:3306'
+    db_server = config('server',default='')
     return create_engine('mysql+pymysql://' + user + ':' + pw + db_server + '/dartboard')
 
 @app.route('/api/v1/resources/players/all', methods=['GET'])
