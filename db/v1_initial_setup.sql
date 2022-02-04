@@ -17,6 +17,7 @@ create table dartboard.player_profiles
 (
   player_name varchar(100) not null,
   description varchar (350),
+  win_count numeric not null,
   date_added timestamp default current_timestamp,
   primary key (player_name)
 )
