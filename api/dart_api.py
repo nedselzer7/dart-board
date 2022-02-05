@@ -6,8 +6,8 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
-from Players import Players
-from Scoreboard import Scoreboard
+from models.Players import Players
+from models.Scoreboard import Scoreboard
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
