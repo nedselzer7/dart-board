@@ -3,38 +3,66 @@ from flask import request, jsonify
 import pandas as pd
 from decouple import config
 import sqlalchemy
-from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import create_engine, Column, String, Numeric, DateTime
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
+from Players import Players
+from Scoreboard import Scoreboard
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
-Base = declarative_base()
-
-class Player(Base):
-    __tablename__ = 'player_profiles'
-    player_name = Column(String(100), primary_key=True)
-    description = Column(String(350))
-    win_count = Column(Numeric)
-    date_added = Column(DateTime)
-
-
-def get_db_engine():
+def get_db_session():
     user = config('user',default='')
     pw = config('pw',default='')
     db_server = config('server',default='')
-    return create_engine('mysql+pymysql://' + user + ':' + pw + db_server + '/dartboard')
-
-@app.route('/api/v1/resources/players/all', methods=['GET'])
-# GET :: Returns all records in
-def get_existing_players():
-    engine = get_db_engine()
+    engine = create_engine('mysql+pymysql://' + user + ':' + pw + db_server + '/dartboard')
     Session = sessionmaker(bind=engine)
-    dart_session = Session()
-    for player in dart_session.query(Player):
-        player_df = pd.read_sql(dart_session.query(Player).statement,dart_session.bind)
-        return jsonify(player_df.to_dict(orient='records'))
+    return Session()
+
+@app.route('/api/v1/resources/players/all_players', methods=['GET'])
+# GET :: Returns all players in player_profiles
+def get_existing_players():
+    dart_session = get_db_session()
+    # Either return a list or a dict:
+    # player_df = pd.read_sql(dart_session.query(Players.player_name).statement,dart_session.bind)
+    # return jsonify(player_df.to_dict(orient='records'))
+    return jsonify([player.player_name for player in dart_session.query(Players)])
+
+@app.route('/api/v1/resources/players/new_player', methods=['POST'])
+# POST :: Takes player name and returns current game scoring
+def create_player():
+    # Figure out how to send data to this POST method
+    dart_session = get_db_session()
+    try:
+        print('INSERT new player profile')
+    # Use Integrity Error here for duplicate player name
+    except IntegrityError:
+        print('Player with given name already exists')
+
+@app.route('/api/v1/resources/players/current_game', methods=['GET'])
+# GET :: Takes player name and returns current game scoring
+def get_current_game():
+    if 'player_name' in request.args:
+        player_name = str(request.args['player_name'])
+    else:
+        return "<h1>Error:</h1><p>No Player ID provided. Please specify a Player ID.</p>"
+
+    dart_session = get_db_session()
+    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name).statement,dart_session.bind)
+    return jsonify(score_df.to_dict(orient='records'))
+
+@app.route('/api/v1/resources/players/update_score', methods=['POST'])
+# POST :: Takes player name and returns current game scoring
+def update_score():
+    dart_session = get_db_session()
+    try:
+        # Try to update for existin player
+        print('Update current player\'s score')
+    except:
+        # If player has not yet submitted any score
+        print('Create new row with player and submitted score')
+
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=8080, debug=True)
