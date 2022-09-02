@@ -45,24 +45,26 @@ def create_player():
         print('Player with given name already exists')
         return "<h1>Error:</h1><p>Player with name " + str(new_player_df['player_name'][0]) + " already exists.</p>"
 
-@app.route('/api/v1/resources/scoreboard/current_game', methods=['GET'])
-# GET :: Takes player name and returns current game scoring
-def get_current_game():
-    if 'player_name' in request.args:
+@app.route('/api/v1/resources/scoreboard/current_score', methods=['GET'])
+# GET :: Takes player name and returns Player's current score
+def get_current_score():
+    if 'player_name' and 'game_id' in request.args:
         player_name = str(request.args['player_name'])
+        game_id = str(request.args['game_id'])
     else:
         return "<h1>Error:</h1><p>No Player ID provided. Please specify a Player ID.</p>"
 
     dart_session = get_db_session()
-    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name).statement,dart_session.bind)
+    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name && Scoreboard.game_id==game_id).statement,dart_session.bind)
     return jsonify(score_df.to_dict(orient='records'))
 
-@app.route('/api/v1/resources/scoreboard/update_score', methods=['POST'])
-# POST :: Takes current round score and updates player's current game scores
+@app.route('/api/v1/resources/scoreboard/update_score', methods=['PUT'])
+# PUT :: Takes current round score and updates player's current game scores
 def update_score():
     dart_session = get_db_session()
     new_scores = pd.DataFrame(request.json, index=[0])
     player = new_scores['player_name'][0]
+    game_id = new_scores['game_id'][0]
     current_score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player).statement,dart_session.bind)
 
     if not current_score_df.empty:
@@ -88,6 +90,7 @@ def update_score():
         print('No player with name ' + str(player) + ' found. Creating new entry.')
         # If player has not yet submitted any score
         new_scoreboard = Scoreboard(
+            game_id = game_id,
             player_name = player,
             count_12 = int(new_scores['count_12'][0]),
             count_13 = int(new_scores['count_13'][0]),
@@ -103,6 +106,29 @@ def update_score():
         dart_session.add(new_scoreboard)
         dart_session.commit()
         return "<h1>Success:</h1><p>New Scoreboard created for player " + str(player) + ".</p>"
+
+@app.route('/api/v1/resources/scoreboard/get_cricket_winner', methods=['GET'])
+# GET :: Checks if the player has won the game - to be called after submitting current scores
+def get_cricket_winner():
+    if 'player_name' and 'game_id' in request.args:
+        player_name = str(request.args['player_name'])
+        game_id = str(request.args['game_id'])
+    else:
+        return "<h1>Error:</h1><p>No Player ID provided. Please specify a Player ID.</p>"
+
+    dart_session = get_db_session()
+    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name && Scoreboard.game_id==game_id).statement,dart_session.bind)
+
+    if int(score_df['count_12'][0]) == int(score_df['count_13'][0]) == int(score_df['count_14'][0]) == int(score_df['count_15'][0]) == int(score_df['count_16'][0]) == int(score_df['count_17'][0]) == int(score_df['count_18'][0]) ==  int(score_df['count_19'][0]) == int(score_df['count_20'][0]) == int(score_df['count_B'][0]) == 3:
+        return True
+    else:
+        return False
+
+@app.route('/api/v1/resources/scoreboard/current_game', methods=['GET'])
+# GET :: Get current game scoreboard
+def get_current_game():
+    
+
 
 
 if __name__ == '__main__':
