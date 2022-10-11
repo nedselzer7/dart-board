@@ -21,7 +21,7 @@ def get_db_session():
     return Session()
 
 @app.route('/api/v1/resources/health', methods=['GET'])
-# GET :: Returns all players in player_profiles
+# GET :: Healthcheck endpoint
 def get_health_check():
     return 'Darts API is running.'
 
