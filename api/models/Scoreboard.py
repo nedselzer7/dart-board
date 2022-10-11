@@ -5,6 +5,7 @@ Base = declarative_base()
 
 class Scoreboard(Base):
     __tablename__ = 'current_cricket_game'
+    game_id = Column(String(10))
     player_name = Column(String(100), primary_key=True)
     count_12 = Column(Numeric)
     count_13 = Column(Numeric)
