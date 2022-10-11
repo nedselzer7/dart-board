@@ -20,6 +20,11 @@ def get_db_session():
     Session = sessionmaker(bind=engine)
     return Session()
 
+@app.route('/api/v1/resources/health', methods=['GET'])
+# GET :: Returns all players in player_profiles
+def get_health_check():
+    return 'Darts API is running.'
+
 @app.route('/api/v1/resources/players/all_players', methods=['GET'])
 # GET :: Returns all players in player_profiles
 def get_existing_players():
@@ -55,7 +60,7 @@ def get_current_score():
         return "<h1>Error:</h1><p>No Player ID provided. Please specify a Player ID.</p>"
 
     dart_session = get_db_session()
-    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name && Scoreboard.game_id==game_id).statement,dart_session.bind)
+    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name & Scoreboard.game_id==game_id).statement,dart_session.bind)
     return jsonify(score_df.to_dict(orient='records'))
 
 @app.route('/api/v1/resources/scoreboard/update_score', methods=['PUT'])
@@ -117,22 +122,22 @@ def get_cricket_winner():
         return "<h1>Error:</h1><p>No Player ID provided. Please specify a Player ID.</p>"
 
     dart_session = get_db_session()
-    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name && Scoreboard.game_id==game_id).statement,dart_session.bind)
+    score_df = pd.read_sql(dart_session.query(Scoreboard).filter(Scoreboard.player_name==player_name & Scoreboard.game_id==game_id).statement,dart_session.bind)
 
     if int(score_df['count_12'][0]) == int(score_df['count_13'][0]) == int(score_df['count_14'][0]) == int(score_df['count_15'][0]) == int(score_df['count_16'][0]) == int(score_df['count_17'][0]) == int(score_df['count_18'][0]) ==  int(score_df['count_19'][0]) == int(score_df['count_20'][0]) == int(score_df['count_B'][0]) == 3:
         return True
     else:
         return False
 
-@app.route('/api/v1/resources/scoreboard/current_game', methods=['GET'])
-# GET :: Get current game scoreboard
-def get_current_game():
-    
+# @app.route('/api/v1/resources/scoreboard/current_game', methods=['GET'])
+# # GET :: Get current game scoreboard
+# def get_current_game():
+
 
 
 
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', port=8080, debug=True)
+    # app.run(host='0.0.0.0', port=80, debug=True)
     # for runnning locally:
     app.run(host='localhost', port=8080, debug=True)
     # app.run(host=127.0.0.1, port=8080, debug=True)
